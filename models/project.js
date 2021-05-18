@@ -6,6 +6,10 @@ var commentSchema = new Schema({
     fileName: {
         type: String,
     },
+    fileType: {
+        type: String,
+        required: true
+    },
     comment:  {
         type: String,
         required: true
@@ -43,6 +47,10 @@ var projectSchema = new Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true
+    },
+    fileType: {
+        type: String,
         required: true
     },
     /*

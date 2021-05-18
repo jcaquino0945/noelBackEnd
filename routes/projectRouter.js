@@ -20,6 +20,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'files',
+      resource_type: 'auto'
     },
     filename: (req, file, cb) => {
       console.log(file);
@@ -60,8 +61,12 @@ projectRouter.post('/',authenticate.verifyUser,authenticate.verifyAdmin, upload.
     if(!req.file) {
         return res.status(500).send({ message: 'Upload fail'});
     } else {
-        https://res.cloudinary.com/dxafyscto/image/upload/v1621329299/files/itmqyzda2dx0yh6bslru.jpg
-        req.body.fileName = 'https://res.cloudinary.com/dxafyscto/image/upload/v1621329299/' + req.file.filename;
+        console.log(req.file) 
+
+       // https://res.cloudinary.com/dxafyscto/image/upload/v1621329299/files/itmqyzda2dx0yh6bslru.jpg
+        req.body.fileName = req.file.path
+        req.body.fileType = req.file.mimetype
+
         Projects.create(req.body, function (err, gallery) {
             if (err) {
                 console.log(err);
@@ -100,10 +105,10 @@ projectRouter.route('/:projectId')
 .get((req,res,next) => {
     Projects.findById(req.params.projectId)
     .populate('comments.author')
-    .then((dish) => {
+    .then((project) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(dish);
+        res.json(project);
     }, (err) => next(err))
     .catch((err) => next(err));
 })
@@ -150,11 +155,40 @@ projectRouter.route('/:projectId/comments')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser,authenticate.verifyAdmin, upload.single('fileName'), function(req, res, next) {
+.post(authenticate.verifyUser,upload.single('fileName'), function(req, res, next) {
     if(!req.file) {
-        return res.status(500).send({ message: 'Upload fail'});
-    } else {
-        req.body.fileName = 'https://res.cloudinary.com/dxafyscto/image/upload/v1621329299/' + req.file.filename;
+        req.body.fileType = 'comment';
+
+        Projects.findById(req.params.projectId)
+        .then((project) => {
+            if (project != null) {
+                req.body.author = req.user._id;
+                project.comments = project.comments.concat(req.body);
+                project.save()
+                .then((project) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(project);
+                }, (err) => next(err));
+            }
+            else {
+                err = new Error('Project ' + req.params.projectId + ' not found');
+                err.status = 404;
+                return next(err);
+            }
+        }, (err) => next(err))
+        .catch((err) => next(err));
+    }
+    else {
+
+        if (req.body.fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || req.body.fileType == 'application/msword' || req.body.fileType == 'text/plain') {
+            req.body.fileType = 'file/text'
+        }
+        else {
+        req.body.fileType = req.file.mimetype
+        req.body.fileName = req.file.path;
+        }
+        
     Projects.findById(req.params.projectId)
     .then((project) => {
         if (project != null) {
@@ -183,7 +217,7 @@ projectRouter.route('/:projectId/comments')
             for (var i = (project.comments.length -1); i >= 0; i--) {
                 project.comments.id(project.comments[i]._id).remove();
             }
-            dish.save()
+            project.save()
             .then((project) => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
@@ -201,7 +235,7 @@ projectRouter.route('/:projectId/comments')
 
 projectRouter.route('/:projectId/comments/:commentId')
 .get((req,res,next) => {
-    Dishes.findById(req.params.commentId)
+    Projects.findById(req.params.commentId)
     .populate('comments.author')
     .then((project) => {
         if (project != null && project.comments.id(req.params.commentId) != null) {
@@ -209,7 +243,7 @@ projectRouter.route('/:projectId/comments/:commentId')
             res.setHeader('Content-Type', 'application/json');
             res.json(project.comments.id(req.params.commentId));
         }
-        else if (dish == null) {
+        else if (project == null) {
             err = new Error('project ' + req.params.projectId + ' not found');
             err.status = 404;
             return next(err);
@@ -222,5 +256,35 @@ projectRouter.route('/:projectId/comments/:commentId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
+.delete(authenticate.verifyUser,(req, res, next) => {
+    Projects.findById(req.params.projectId)
+      .then((project) => {
+          if (project != null && project.comments.id(req.params.commentId) !== null && project.comments.id(req.params.commentId).author.equals(req.user._id)) {
+            project.comments.id(req.params.commentId).remove();
+            project.save()
+              .then((project) => {
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.json(project);
+              }, (err) => next(err));
+          }
+          else if (project == null) {
+              err = new Error('Project ' + req.params.projectId + ' not found');
+              err.status = 404;
+              return next(err);
+          }
+          else if (project.comments.id(req.params.commentId) == null) {
+              err = new Error('Comment ' + req.params.commentId + ' not found');
+              err.status = 404;
+              return next(err);
+          }
+          else {
+            err = new Error("you can't delete comments that you didn't write! \n");
+            err.status = 403 ;
+            return next(err) ;
+          }
+      }, (err) => next(err))
+      .catch((err) => next(err));
+  });
 
 module.exports = projectRouter;

@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 var commentSchema = new Schema({
+    authorName: {
+        type:String,
+        required: true
+    },
     fileName: {
         type: String,
     },
@@ -19,18 +23,20 @@ var commentSchema = new Schema({
         ref: 'User',
         required: true
     },
-    /*
     uploaded: { 
         type: Date, 
         default: Date.now,
         required: true
     },
-    */
 }, {
     timestamps: true
 });
 
 var projectSchema = new Schema({
+    authorName: {
+        type:String,
+        required: true
+    },
     name: {
         type: String,
         required: true,
@@ -53,13 +59,11 @@ var projectSchema = new Schema({
         type: String,
         required: true
     },
-    /*
     uploaded: { 
         type: Date, 
         default: Date.now,
         required: true
     },
-    */
     comments:[commentSchema]
 }, {
     timestamps: true

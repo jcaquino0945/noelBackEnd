@@ -4,6 +4,8 @@ const Schema = mongoose.Schema;
 
 var commentSchema = new Schema({
     authorName: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         type:String,
         required: true
     },
@@ -34,6 +36,8 @@ var commentSchema = new Schema({
 
 var projectSchema = new Schema({
     authorName: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         type:String,
         required: true
     },

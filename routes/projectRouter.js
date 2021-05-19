@@ -66,6 +66,7 @@ projectRouter.post('/',authenticate.verifyUser,authenticate.verifyAdmin, upload.
        // https://res.cloudinary.com/dxafyscto/image/upload/v1621329299/files/itmqyzda2dx0yh6bslru.jpg
         req.body.fileName = req.file.path
         req.body.fileType = req.file.mimetype
+        req.body.authorName = req.user.name;
 
         Projects.create(req.body, function (err, gallery) {
             if (err) {
@@ -156,6 +157,8 @@ projectRouter.route('/:projectId/comments')
     .catch((err) => next(err));
 })
 .post(authenticate.verifyUser,upload.single('fileName'), function(req, res, next) {
+    req.body.authorName = req.user.name;
+
     if(!req.file) {
         req.body.fileType = 'comment';
 
@@ -163,6 +166,8 @@ projectRouter.route('/:projectId/comments')
         .then((project) => {
             if (project != null) {
                 req.body.author = req.user._id;
+                console.log(req.user)
+                req.body.authorName = req.user.name;
                 project.comments = project.comments.concat(req.body);
                 project.save()
                 .then((project) => {
@@ -193,6 +198,7 @@ projectRouter.route('/:projectId/comments')
     .then((project) => {
         if (project != null) {
             req.body.author = req.user._id;
+            req.body.authorName = req.user.name;
             project.comments = project.comments.concat(req.body);
             project.save()
             .then((project) => {

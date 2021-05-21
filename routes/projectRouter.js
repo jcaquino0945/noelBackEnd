@@ -80,7 +80,7 @@ projectRouter.post('/',authenticate.verifyUser,authenticate.verifyAdmin, upload.
 
 projectRouter.route('/')
 .get((req,res,next) => {
-    Projects.find({})
+    Projects.find({}).sort({ uploaded: -1 })
     .then((projects) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -141,7 +141,11 @@ projectRouter.route('/:projectId')
 projectRouter.route('/:projectId/comments')
 .get((req,res,next) => {
     Projects.findById(req.params.projectId)
-    .populate('comments.author')
+    .populate({
+        path: 'comments',
+        select: 'author',
+        options: { sort: { uploaded: -1 } }
+      })
     .then((project) => {
         if (project != null) {
             res.statusCode = 200;

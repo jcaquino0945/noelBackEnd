@@ -17,9 +17,18 @@ router.get('/', function(req, res, next) {
   }, (err) => next(err))
   .catch((err) => next(err));
 });
+router.delete('/', function(req, res, next) {
+  User.remove({})
+  .then((users) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users);
+  }, (err) => next(err))
+  .catch((err) => next(err));
+});
 
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, age: req.body.age, email: req.body.email, admin: req.body.admin}), 
+  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, birthday: req.body.birthday, email: req.body.email, admin: req.body.admin}), 
   req.body.password, (err, admin) => {
   if(err) {
     res.statusCode = 500;

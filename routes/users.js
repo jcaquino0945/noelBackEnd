@@ -28,7 +28,7 @@ router.delete('/', function(req, res, next) {
 });
 
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, birthday: req.body.birthday, email: req.body.email, admin: req.body.admin}), 
+  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, birthday: req.body.birthday, email: req.body.email, admin: req.body.admin,verified: req.body.verified}), 
   req.body.password, (err, admin) => {
   if(err) {
     res.statusCode = 500;
@@ -47,11 +47,18 @@ router.post('/signup', (req, res, next) => {
 
 router.post('/login', passport.authenticate('local'), (req, res) => {
 
-  var token = authenticate.getToken({_id: req.user._id});
-  var userDetails = ({user: req.user})
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json');
-  res.json({success: true, token: token, user: userDetails, status: 'You are successfully logged in!'});
+  if (req.user.verified == true) {
+    var token = authenticate.getToken({_id: req.user._id});
+    var userDetails = ({user: req.user})
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, token: token, user: userDetails, status: 'You are successfully logged in!'});
+  } 
+  if (req.user.verified == false) {
+    res.statusCode = 200;
+    res.json({success: false,token: false, user: false,status: 'You are not verified'});
+  }
+  
 });
 
 router.get('/logout',(req, res, next) => {

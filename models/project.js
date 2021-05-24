@@ -68,6 +68,22 @@ var projectSchema = new Schema({
         default: Date.now,
         required: true
     },
+    images: {
+        type: Number,
+        default: 0
+    },
+    textFiles: {
+        type: Number,
+        default: 0
+    },
+    videos: {
+        type: Number,
+        default: 0
+    },
+    audio: {
+        type: Number,
+        default: 0
+    },
     comments:[commentSchema]
 }, {
     timestamps: true

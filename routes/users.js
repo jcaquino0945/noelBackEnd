@@ -17,12 +17,12 @@ router.get('/', authenticate.verifyUser,authenticate.verifyAdmin,function(req, r
   }, (err) => next(err))
   .catch((err) => next(err));
 });
-router.delete('/', function(req, res, next) {
-  User.remove({})
-  .then((users) => {
+router.delete('/:id',authenticate.verifyUser,authenticate.verifyAdmin, function(req, res, next) {
+  User.findByIdAndRemove(req.params.id)
+  .then((resp) => {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.json(users);
+      res.json(resp);
   }, (err) => next(err))
   .catch((err) => next(err));
 });

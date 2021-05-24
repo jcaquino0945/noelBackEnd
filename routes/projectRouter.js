@@ -28,6 +28,9 @@ const storage = new CloudinaryStorage({
       if(file.mimetype === 'image/gif') {
         filetype = 'gif';
       }
+      if(file.mimetype === 'application/pdf') {
+        filetype = 'pdf';
+      }
       if(file.mimetype === 'image/png') {
         filetype = 'png';
       }
@@ -117,7 +120,7 @@ projectRouter.route('/:projectId')
     res.statusCode = 403;
     res.end('POST operation not supported on /projects/'+ req.params.projectId);
 })
-.put(authenticate.verifyUser,authenticate.verifyAdmin,(req, res, next) => {
+.put(authenticate.verifyUser,(req, res, next) => {
     Projects.findByIdAndUpdate(req.params.projectId, {
         $set: req.body
     }, { new: true })
@@ -269,7 +272,7 @@ projectRouter.route('/:projectId/comments/:commentId')
 .delete(authenticate.verifyUser,(req, res, next) => {
     Projects.findById(req.params.projectId)
       .then((project) => {
-          if (project != null && project.comments.id(req.params.commentId) !== null && project.comments.id(req.params.commentId).author.equals(req.user._id)) {
+          if (project != null && project.comments.id(req.params.commentId) !== null && project.comments.id(req.params.commentId).author.equals(req.body._id)) {
             project.comments.id(req.params.commentId).remove();
             project.save()
               .then((project) => {

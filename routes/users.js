@@ -4,8 +4,20 @@ const passport = require('passport');
 var User = require('../models/user');
 var authenticate = require('../authenticate');
 const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
 
 router.use(bodyParser.json());
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'soapust@gmail.com',
+    pass: 'S3CuR1ty!' // naturally, replace both with your real credentials or an application-specific password
+  },
+  tls: {
+    rejectUnauthorized: false //added because of self signed cert chain error //Error: self signed certificate in certificate chain
+},
+});
 
 /* GET users listing. */
 router.get('/', authenticate.verifyUser,authenticate.verifyAdmin,function(req, res, next) {
@@ -39,7 +51,7 @@ router.put('/:id',authenticate.verifyUser,authenticate.verifyAdmin, function(req
 });
 
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, birthday: req.body.birthday, email: req.body.email, admin: req.body.admin,verified: req.body.verified}), 
+  User.register(new User({username: req.body.username, name: req.body.name, contactNumber: req.body.contactNumber, address: req.body.address, birthday: req.body.birthday, email: req.body.email, admin: req.body.admin,verified: req.body.verified}), 
   req.body.password, (err, admin) => {
   if(err) {
     res.statusCode = 500;
@@ -84,4 +96,28 @@ router.get('/logout',(req, res, next) => {
     next(err);
   }
 });
+
+router.post('/userVerification',(req,res) => {
+  const {to} = req.body;
+  var mailData = {
+      from: 'soapust@gmail.com',
+      to: to,
+      subject: "SOAP User Verification",
+      text: "Our Admin has verified your account! You can now login to SOAP"
+  };
+  transporter.sendMail(mailData, function(err, info) {
+      if (err) {
+          console.log(err);
+      } else {
+          // see https://nodemailer.com/usage
+          console.log("info.messageId: " + info.messageId);
+          console.log("info.envelope: " + info.envelope);
+          console.log("info.accepted: " + info.accepted);
+          console.log("info.rejected: " + info.rejected);
+          console.log("info.pending: " + info.pending);
+          console.log("info.response: " + info.response);
+      }
+      transporter.close();
+  });
+})
 module.exports = router;

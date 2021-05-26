@@ -11,6 +11,10 @@ var User = new Schema({
         type: String,
         required: true
     },
+    address: {
+        type: String,
+        required: true
+    },
     birthday: {
         type: String,
         required: true

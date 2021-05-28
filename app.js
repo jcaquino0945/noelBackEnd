@@ -10,6 +10,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var projectRouter = require('./routes/projectRouter');
+var contactRouter = require('./routes/contactRouter');
 
 var app = express();
 
@@ -44,6 +45,7 @@ app.use(passport.initialize());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/projects', projectRouter);
+app.use('/contact', contactRouter);
 
 
 // catch 404 and forward to error handler

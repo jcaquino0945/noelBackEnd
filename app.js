@@ -10,6 +10,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var projectRouter = require('./routes/projectRouter');
+var contactRouter = require('./routes/contactRouter');
 
 var app = express();
 
@@ -43,6 +44,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/users', usersRouter);
 app.use('/projects', projectRouter);
+app.use('/contact', contactRouter);
 
 app.use(express.static(path.join(__dirname, 'dist/noelFrontEnd')));
 app.get("/*", function (req, res) {
